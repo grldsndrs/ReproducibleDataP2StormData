@@ -1,0 +1,240 @@
+---
+title: "Strorm Data Affect Analysis: What are the Public Economic and Health Effects?"
+author: grldsndrs
+params:
+  start: !r FALSE
+snapshot: !r as.POSIXct("2015-01-01 12:30:00")
+---
+
+```{r echo=FALSE,eval=TRUE}
+date()  
+```
+
+```{r echo=FALSE,eval=TRUE}
+library(knitr)  
+opts_knit$set(root.dir='..')
+```
+```{r echo=FALSE,setup, cache=FALSE, include=TRUE}
+library(knitr)
+output <- opts_knit$get("rmarkdown.pandoc.to")
+## if (output=="html") opts_chunk$set(fig.width=11, fig.height=11)
+## if (output=="docx") opts_chunk$set(fig.width=6,  fig.height=6)
+opts_chunk$set(comment = '',prompt = TRUE)
+
+```
+  
+```{r echo=FALSE,eval=TRUE}
+source(paste0(getwd(),c("/lib/modelGeneratorHelp.R")))
+```
+
+
+## Data Processing: Load Data via *"ProjectTemplate"*
+```{r echo=TRUE,eval=TRUE}
+ldData <- process.loadData()
+```
+  
+
+  
+
+```{r echo=FALSE,eval=TRUE, tidy=TRUE}
+process.summurize()
+process.structure()
+```
+> ###### **Based on the summary above I will use the *make.names* funcion to tidy up the names**
+  
+
+  
+
+```{r echo=FALSE,eval=TRUE, tidy=TRUE}
+transform.cleanNames()
+```
+  
+
+  
+
+> ###### **The Damage variables are transformed into a common scale dollar converting the code into and actual exponent that I use to scale the units**
+
+```{r echo=TRUE,eval=TRUE}
+rawData<-repdata.data.StormData
+rawData$PROPDMGEXP <- as.character(rawData$PROPDMGEXP)
+rawData$PROPDMGEXP[rawData$PROPDMGEXP %in% c("","?","+","-","1")]<-1
+rawData$PROPDMGEXP[rawData$PROPDMGEXP %in% c("h","H")]<-2
+rawData$PROPDMGEXP[rawData$PROPDMGEXP %in% c("k","K")]<-3
+rawData$PROPDMGEXP[rawData$PROPDMGEXP %in% c("m","M")]<-6
+rawData$PROPDMGEXP[rawData$PROPDMGEXP %in% c("b","B")]<-9
+rawData$PROPDMGEXP[rawData$PROPDMGEXP %in% c("0")]<-0
+rawData$CROPDMGEXP <- as.character(rawData$CROPDMGEXP)
+rawData$CROPDMGEXP[rawData$CROPDMGEXP %in% c("","?","+","-","1")]<-1
+rawData$CROPDMGEXP[rawData$CROPDMGEXP %in% c("h","H")]<-2
+rawData$CROPDMGEXP[rawData$CROPDMGEXP %in% c("k","K")]<-3
+rawData$CROPDMGEXP[rawData$CROPDMGEXP %in% c("m","M")]<-6
+rawData$CROPDMGEXP[rawData$CROPDMGEXP %in% c("b","B")]<-9
+rawData$CROPDMGEXP[rawData$CROPDMGEXP %in% c("0")]<-0
+rawData$PROPDMGEXP <- as.numeric(rawData$PROPDMGEXP)
+rawData$CROPDMGEXP <- as.numeric(rawData$CROPDMGEXP)
+
+process.makeDataFrameRepository(rawData)
+
+```
+  
+
+  
+
+```{r echo=TRUE,eval=TRUE, results='hide'}
+# Use the dfContext to get the current data frame.
+# Pass it to mutate to process columns.
+# Pass the result to dfContext to set the current data frame
+process.dfContext(
+    mutate(process.dfContext(),
+           CROPDMG = CROPDMG*10^CROPDMGEXP,
+           PROPDMG = PROPDMG*10^PROPDMGEXP
+      )%>%
+      select(-CROPDMGEXP,-PROPDMGEXP)
+    )
+
+```
+  
+
+  
+> ###### **The variables are reordered according to the role in the analysis. Fixed values, such as location related variables, are the first coloums. The measured values follow.**
+
+
+
+  
+```{r echo=FALSE,eval=TRUE, results='hide'}
+newOrder <- list(
+  "STATE","BGN_DATE","END_DATE",
+  "EVTYPE","F","MAG",
+  "FATALITIES","INJURIES","PROPDMG","CROPDMG")
+
+transformedData<-transform.selectNames(process.dfContext(),newOrder)
+# normalize the spelling of Event types to upper case removing unnecessary duplicates
+transformedData$select$EVTYPE <- toupper(transformedData$select$EVTYPE)
+process.dfContext(transformedData$select)
+```
+
+```{r echo=FALSE,eval=TRUE, tidy=TRUE}
+transformedData[1:2]
+```
+
+> ###### **The __*F*__  and __*MAG*__ variables may be suited for use as a scale in a later plot.  I have given them a numeric class in anticipation. The other variables are cast as would be expected.**
+  
+
+  
+```{r echo=FALSE,eval=TRUE, tidy=TRUE}
+newClass <- list(
+  "Factor","POSIXct","POSIXct",
+  "Factor","Numeric","Numeric",
+  "Numeric","Numeric","Numeric","Numeric")
+transform.selectClass(process.dfContext(),newOrder,newClass)
+process.summurize(process.dfContext())
+```
+  
+
+  
+```{r echo=FALSE,eval=TRUE, results='hide'}
+arrangement <- list(
+  "BGN_DATE", "END_DATE",
+  "EVTYPE","MAG",
+  "FATALITIES","INJURIES","PROPDMG","CROPDMG","F","STATE"
+)
+transform.orderRowsBy(process.dfContext(),arrangement)
+```
+  
+
+  
+```{r echo=FALSE,eval=TRUE, results='hide'}
+group <- list(
+  "STATE",
+  "EVTYPE")
+transform.groupRowsBy(process.dfContext(),group)
+```
+  
+
+  
+> ###### **Generaly there are very few missing values in the data set. The F variable by far contains the most and is to be expected as these events are rare.**
+
+```{r, cache=TRUE,fig.cap = "Missing values will not be an issue. The F variable can be used as an aesthetic in a plot"}
+analyze.missing.Plot(process.dfContext())
+```
+  
+
+  
+```{r echo=FALSE,eval=TRUE,results='hide'}
+eventCostTable <- analyze.summarize.Table(.data = group_by(process.dfContext(),EVTYPE),
+                       Fatlaities=sum(FATALITIES,na.rm = TRUE),
+                       Injuries=sum(INJURIES,na.rm = TRUE),
+                       PropDmg=sum(PROPDMG,na.rm = TRUE),
+                       CropDmg=sum(CROPDMG,na.rm = TRUE),
+                       veu ="Table showing the Cost in dollars vs Event Type for all data")
+```
+
+```{r kable, echo=FALSE,eval=TRUE}
+print(eventCostTable$out,type="html")
+```
+  
+
+  
+
+#### Results
+
+## _**Which types of events have the greatest economic consequences?**_
+### and
+## _**Which types of events are most harmful to Human Health?**_
+
+> ###### **The data are grouped by EVTYPE and ordered by BGN_DATE.                      The color and opacity of each name is scaled according to                      a cost function calculatd.  It is listed at the end of this                      doccument. Is a variable called scaled.Cost.Alpha. The                      variable has been scaled to the symbol fill color.                      The F variable scale to the line color of the symbol.                      Fatalities scale to the opacity of the symbol. Injuries                      scale to the size of the symbol. Finally the stroke of                      the line has been scaled to the *scaled* sum of Damages                      and Human suffuring. Refer to the end of the document                      to see how this calculated**
+
+  
+
+```{r fig.margin = TRUE,fig.cap = "The visible Event Types have the greatest economic and health consquences"}
+analyze.summarize.Plot(percentile = .001,dayta = process.dfContext())
+```
+
+
+#### Synopsis
+This plot summarizes the data so that the storm data,
+can be viewed as a function of the Cost of storm, in terms
+of human health consequense and finacial damages.
+The fundamental statistic calculated here is the sum of
+the Crop and Property damages. This sum is used as input
+to the model while other variable of interest, such as
+Injuries and Fatalities have been scaled in an aesthetics
+to decorate that fundamental statistic.
+
+The result is a plot in which the highest cost data
+points stand out in either size or color and tend to the right
+side of the graph.
+The left side provides the answer to the questions posed.
+
+Each Event Type name, has be scaled in color and opacity according to the
+calculted metric scaled.Cost.Alpha, which is based on the fundamental stat
+refered to above.
+
+The more visiable the name the larger the apparent cost.
+
+### _**The fadded names on the y axis can be regarded as having a relatively small amount
+of consequence (monetary or health).  So the names which can be resolved most clearly
+can be regarded as having the Greatest Consequence, in either respect.**_
+
+
+##EventType Economic Consequences Appendix A ---------------------------------------
+  
+```{r echo = TRUE, eval= FALSE }
+daytaPlotSet<-
+  daytaPlotSet%>%
+  mutate(
+    scale.PDmg= rescale(PROPDMG,c(0,1),range(PROPDMG,na.rm=TRUE)),
+    scale.CDmg= rescale(CROPDMG,c(0,1),range(CROPDMG,na.rm=TRUE)),
+    scale.Injr= rescale(INJURIES,c(0,1),range(INJURIES,na.rm=TRUE)),
+    scale.Fatl= rescale(FATALITIES,c(0,1),range(FATALITIES,na.rm=TRUE)),
+
+    scale.Cost.Alpha= rescale(scale.PDmg + scale.CDmg + scale.Injr + scale.Fatl,c(.1,1)),
+
+    scale.Cost.Stroke= floor(rescale(scale.Cost.Alpha,c(2,7))),
+    scale.Cost.Color= floor(rescale(scale.Cost.Alpha,c(1,numberOfColsForEventType))),
+    EVTYPE.Color.Alpha = alpha(palEVTYPECols[scale.Cost.Color],scale.Cost.Alpha)
+    )
+```
+  
+
+  

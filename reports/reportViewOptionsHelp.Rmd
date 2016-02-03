@@ -1,0 +1,24 @@
+---
+title: "Strorm Data Affect Analysis: What are the Public Economic and Health Effects?"
+author: grldsndrs
+params:
+  start: !r FALSE
+snapshot: !r as.POSIXct("2015-01-01 12:30:00")
+---
+
+```{r echo=FALSE,eval=TRUE}
+date()  
+```
+
+```{r echo=FALSE,eval=TRUE}
+library(knitr)  
+opts_knit$set(root.dir='..')
+```
+```{r echo=FALSE,setup, cache=FALSE, include=TRUE}
+library(knitr)
+output <- opts_knit$get("rmarkdown.pandoc.to")
+## if (output=="html") opts_chunk$set(fig.width=11, fig.height=11)
+## if (output=="docx") opts_chunk$set(fig.width=6,  fig.height=6)
+opts_chunk$set(comment = '',prompt = TRUE)
+
+```
