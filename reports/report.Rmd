@@ -85,12 +85,73 @@ process.makeDataFrameRepository(rawData)
 # Pass it to mutate to process columns.
 # Pass the result to dfContext to set the current data frame
 process.dfContext(
+  mutate(process.dfContext(),
+         EVTYPE = str_trim(EVTYPE, side = "both")
+         )
+)
+
+```
+  
+
+  
+
+```{r echo=TRUE,eval=TRUE, results='hide'}
+# Use the dfContext to get the current data frame.
+# Pass it to mutate to process columns.
+# Pass the result to dfContext to set the current data frame
+process.dfContext(
     mutate(process.dfContext(),
            CROPDMG = CROPDMG*10^CROPDMGEXP,
            PROPDMG = PROPDMG*10^PROPDMGEXP
       )%>%
       select(-CROPDMGEXP,-PROPDMGEXP)
     )
+
+```
+  
+
+  
+
+> ###### **Separate the EVTYPE variables to common antecedents**
+
+
+```{r echo=TRUE,eval=TRUE, results='hide'}
+# Use the dfContext to get the current data frame.
+# Pass it to mutate to process columns.
+# Pass the result to dfContext to set the current data frame
+process.dfContext(
+  separate(
+    process.dfContext(),
+    sep = "/",
+    into = c("EVTYPE", "EVTYPEFwSlash"),
+    col = EVTYPE,
+    convert = FALSE,
+    extra = "merge",
+    fill = "right"
+  ) %>%
+    separate(
+      into = c("EVTYPE", "EVTYPE.1", "EVTYPE.2", "EVTYPE.3", "EVTYPE.4"),
+      col = EVTYPE,
+      convert = FALSE,
+      extra = "merge",
+      fill = "right"
+    )
+)
+
+```
+  
+
+  
+
+```{r echo=TRUE,eval=TRUE, results='hide'}
+# Use the dfContext to get the current data frame.
+# Pass it to mutate to process columns.
+# Pass the result to dfContext to set the current data frame
+process.dfContext(
+  mutate(process.dfContext(),
+         EVTYPE = str_trim(EVTYPE, side = "both")
+  )
+)
 
 ```
   
@@ -104,7 +165,8 @@ process.dfContext(
 ```{r echo=FALSE,eval=TRUE, results='hide'}
 newOrder <- list(
   "STATE","BGN_DATE","END_DATE",
-  "EVTYPE","F","MAG",
+  "EVTYPE","EVTYPE.1","EVTYPE.2","EVTYPE.3","EVTYPE.4"
+  ,"F","MAG",
   "FATALITIES","INJURIES","PROPDMG","CROPDMG")
 
 transformedData<-transform.selectNames(process.dfContext(),newOrder)
@@ -124,7 +186,8 @@ transformedData[1:2]
 ```{r echo=FALSE,eval=TRUE, tidy=TRUE}
 newClass <- list(
   "Factor","POSIXct","POSIXct",
-  "Factor","Numeric","Numeric",
+  "Factor","Factor","Factor","Factor","Factor",
+  "Numeric","Numeric",
   "Numeric","Numeric","Numeric","Numeric")
 transform.selectClass(process.dfContext(),newOrder,newClass)
 process.summurize(process.dfContext())
@@ -135,7 +198,7 @@ process.summurize(process.dfContext())
 ```{r echo=FALSE,eval=TRUE, results='hide'}
 arrangement <- list(
   "BGN_DATE", "END_DATE",
-  "EVTYPE","MAG",
+  "EVTYPE","EVTYPE.1","EVTYPE.2","EVTYPE.3","EVTYPE.4","MAG",
   "FATALITIES","INJURIES","PROPDMG","CROPDMG","F","STATE"
 )
 transform.orderRowsBy(process.dfContext(),arrangement)
@@ -143,15 +206,176 @@ transform.orderRowsBy(process.dfContext(),arrangement)
   
 
   
+```{r echo=TRUE,eval=TRUE, results='hide'}
+
+t<-process.dfContext()
+t[grep("^ABNOR",t$EVTYPE),"EVTYPE"]<- "ABNORMAL"
+t[grep("^AVAL",t$EVTYPE),"EVTYPE"]<- "AVALANCHE"
+t[grep("^BLOW",t$EVTYPE),"EVTYPE"]<- "BLOW/ING"
+t[grep("^COASTALFLOOD",t$EVTYPE),"EVTYPE"]<- "COASTAL FLOOD"
+t[grep("^COASTALSTORM",t$EVTYPE),"EVTYPE"]<- "COASTAL STORM"
+t[grep("^DRY",t$EVTYPE),"EVTYPE"]<- "DRY"
+t[grep("^EXCESS",t$EVTYPE),"EVTYPE"]<- "EXCESSIVE"
+t[grep("^EXTREM",t$EVTYPE),"EVTYPE"]<- "EXTREME"
+t[grep("^FLOOD",t$EVTYPE),"EVTYPE"]<- "FLOOD/ING/S"
+t[grep("^FREEZ",t$EVTYPE),"EVTYPE"]<- "FREEZ/ING"
+t[grep("^FUNNEL",t$EVTYPE),"EVTYPE"]<- "FUNNEL/S"
+t[grep("^HAILSTORM",t$EVTYPE),"EVTYPE"]<- "HAIL"
+t[grep("^HAIL STORM",t$EVTYPE),"EVTYPE"]<- "HAIL"
+t[grep("^HEAT",t$EVTYPE),"EVTYPE"]<- "HEAT"
+t[grep("^HOT",t$EVTYPE),"EVTYPE"]<- "HEAT"
+t[grep("^HYP",t$EVTYPE),"EVTYPE"]<- "HYPOTHERMIA"
+t[grep("^ICESTORM",t$EVTYPE),"EVTYPE"]<- "ICE"
+t[grep("^ICY",t$EVTYPE),"EVTYPE"]<- "ICE"
+t[grep("^LANDSLIDE",t$EVTYPE),"EVTYPE"]<- "LANDSLIDE"
+t[grep("^LIGHTING",t$EVTYPE),"EVTYPE"]<- "LIGHTNING"
+t[grep("^LIGHNTNING",t$EVTYPE),"EVTYPE"]<- "LIGHTNING"
+t[grep("^LIGHTNING",t$EVTYPE),"EVTYPE"]<- "LIGHTNING"
+t[grep("^LOCAL",t$EVTYPE),"EVTYPE"]<- "LOCAL"
+t[grep("^MUDSLIDE",t$EVTYPE),"EVTYPE"]<- "MUDSLIDE"
+t[grep("^PROLONG",t$EVTYPE),"EVTYPE"]<- "PROLONGED"
+t[grep("^RAIN",t$EVTYPE),"EVTYPE"]<- "RAIN"
+t[grep("^SNOWFALL",t$EVTYPE),"EVTYPE"]<- "SNOW FALL"
+t[grep("^SNOWMELT",t$EVTYPE),"EVTYPE"]<- "SNOW MELT"
+t[grep("^SNOWSTORM",t$EVTYPE),"EVTYPE"]<- "SNOW"
+t[grep("^MUDSLIDE",t$EVTYPE),"EVTYPE"]<- "MUDSLIDE"
+t[grep("^THU",t$EVTYPE),"EVTYPE"]<- "THUNDER STORM"
+t[grep("^TORN",t$EVTYPE),"EVTYPE"]<- "TORNADO"
+t[grep("^TSTM",t$EVTYPE),"EVTYPE"]<- "TSUNAMI"
+t[grep("^TUNDER",t$EVTYPE),"EVTYPE"]<- "THUNDER STORM"
+t[grep("^UN",t$EVTYPE),"EVTYPE"]<- "UNUSUAL"
+t[grep("^VOG",t$EVTYPE),"EVTYPE"]<- "FOG"
+t[grep("^WATERSPOUT",t$EVTYPE),"EVTYPE"]<- "WATER SPOUT"
+t[grep("^WAYERSPOUT",t$EVTYPE),"EVTYPE"]<- "WATER SPOUT"
+t[grep("^WHIRLWIND",t$EVTYPE),"EVTYPE"]<- "WHIRL WIND"
+t[grep("^WILDFIRE",t$EVTYPE),"EVTYPE"]<- "WILD FIRE"
+t[grep("^WIND",t$EVTYPE),"EVTYPE"]<- "WIND"
+t[grep("^WINT",t$EVTYPE),"EVTYPE"]<- "WINTER"
+t[grep("^DUSTSTORM",t$EVTYPE),"EVTYPE"]<- "DUST STORM"
+t[grep("^MUDSLIDE",t$EVTYPE),"EVTYPE"]<- "MUD SLIDE"
+t[grep("^MUD SLIDE",t$EVTYPE),"EVTYPE"]<- "MUD SLIDE"
+
+t$EVTYPE.1 <- toupper(t$EVTYPE.1)
+t$EVTYPE.2 <- toupper(t$EVTYPE.2)
+
+t[grep("^SNOWFALL",t$EVTYPE.1),"EVTYPE.1"]<- "SNOW"
+t[grep("^EROS",t$EVTYPE.1),"EVTYPE.1"]<- "EROSION"
+t[grep("^DEVEL",t$EVTYPE.1),"EVTYPE.1"]<- "DEVIL"
+t[grep("^Snow",t$EVTYPE.1),"EVTYPE.1"]<- "SNOW"
+t[grep("^[fF][lL]",t$EVTYPE.1),"EVTYPE.1"]<- "FLOOD"
+t[grep("^CLOUD",t$EVTYPE.1),"EVTYPE.1"]<- "CLOUD"
+t[grep("^RAINFALL",t$EVTYPE.1),"EVTYPE.1"]<- "RAIN"
+t[grep("^RAINS",t$EVTYPE.1),"EVTYPE.1"]<- "RAIN"
+t[grep("^SHOWERS",t$EVTYPE.1),"EVTYPE.1"]<- "RAIN"
+t[grep("^SHOWER",t$EVTYPE.1),"EVTYPE.1"]<- "RAIN"
+t[grep("^WIND",t$EVTYPE.1),"EVTYPE.1"]<- "WIND"
+t[grep("^PRECIPATATION ",t$EVTYPE.1),"EVTYPE.1"]<- "PRECIPITATION "
+t[grep("^SNOWPACK",t$EVTYPE.1),"EVTYPE.1"]<- "SNOW"
+t[grep("^SWELLS",t$EVTYPE.1),"EVTYPE.1"]<- "SURF"
+t[grep("^SEAS",t$EVTYPE.1),"EVTYPE.1"]<- "TIDES"
+t[grep("^TEMPERATURE",t$EVTYPE.1),"EVTYPE.1"]<- "TEMPERATURE"
+t[grep("^WATER",t$EVTYPE.1),"EVTYPE.1"]<- "TIDES"
+t[grep("^WAVES",t$EVTYPE.1),"EVTYPE.1"]<- "SURF"
+t[grep("^TIDES",t$EVTYPE.1),"EVTYPE.1"]<- "SURF"
+t[grep("^SNOWFALL",t$EVTYPE.1),"EVTYPE.1"]<- "SNOW"
+t[grep("^PRECIP",t$EVTYPE.1),"EVTYPE.1"]<- "RAIN"
+t[grep("^SNOWFALL",t$EVTYPE.1),"EVTYPE.1"]<- "SNOW"
+t[grep("^SNOWFALL",t$EVTYPE.1),"EVTYPE.1"]<- "SNOW"
+t[grep("^SNOWFALL",t$EVTYPE.1),"EVTYPE.1"]<- "SNOW"
+t[grep("^DRYNESS",t$EVTYPE.1),"EVTYPE.1"]<- "DRY"
+t[grep("^Warm",t$EVTYPE.1),"EVTYPE.1"]<- "HEAT"
+t[grep("^CURRENT",t$EVTYPE.1),"EVTYPE.1"]<- "CURRENT"
+t[grep("^THU",t$EVTYPE.1),"EVTYPE.1"]<- "THUNDER STORM"
+t[grep("^WIND",t$EVTYPE.1),"EVTYPE.1"]<- "WIND"
+t[grep("^MICOBURST",t$EVTYPE.1),"EVTYPE.1"]<- "MICROBURST"
+t[grep("^FIRE",t$EVTYPE.1),"EVTYPE.1"]<- "FIRE"
+t[grep("^STORM",t$EVTYPE.1),"EVTYPE.1"]<- "STORM"
+t[grep("^SLIDE",t$EVTYPE.1),"EVTYPE.1"]<- "SLIDE"
+
+t[grep("^STORM",t$EVTYPE.1),"EVTYPE.1"]<- "STORM"
+
+
+sufficentDescription <- list(
+  "AVALANCHE",
+  "BLIZZARD",
+  "DUSTSTORM",
+  "FLOOD/ING/S",
+  "HAIL STORM/S",
+  "ICE STORM",
+  "LANDSLIDE",
+  "LIGHTNING",
+  "RAIN",
+  "SNOW FALL",
+  "SNOW MELT",
+  "SNOW STORM",
+  "TSUNAMI",
+  "THUNDER STORM",
+  "TYPHOON",
+  "WATERSPOUT",
+  "VOLCANIC",
+  "TORNADO",
+  "HEAT",
+  "WIND",
+  "HAIL",
+  "COLD",
+  "ICE",
+  "HURRICANE",
+  "SNOW",
+  "SUMMARY",
+  "TROPICAL STORM",
+  "HIGH WIND",
+  "HIGH SURF",
+  "HEAVY SNOW",
+  "HEAVY RAIN",
+  "HEAVY SURF",
+  "EXTREME WIND",
+  "DUST DEVIL",
+  "DRY MICROBURST",
+  "FLASH FLOOD",
+  "COASTAL FLOOD",
+  "COASTAL FLOOD")
+
+sufficentDescription.1 <- list(
+  "WIND",
+  "MICROBURST",
+  "STORM,
+  DEVIL")
+
+newEVTYPE <-
+  mapply(function(evt,evt.1,evt.2){
+    ifelse(
+      test = evt %in% sufficentDescription,
+      yes = evt,
+      no = paste(
+        evt,
+        ifelse(
+          test = is.na(evt.1),
+          yes = "",
+          no = evt.1
+        ),
+        ifelse(
+          test = is.na(evt.2) |evt.1 %in% sufficentDescription.1,
+          yes = "",
+          no = evt.2
+        ),
+      sep = " ")
+    )
+  },t$EVTYPE,t$EVTYPE.1,t$EVTYPE.2,SIMPLIFY = TRUE)
+t$EVTYPE <- newEVTYPE
+process.dfContext(t%>%select(-c(EVTYPE.1,EVTYPE.2,EVTYPE.3,EVTYPE.4)))
+
+```
+  
+
+  
 ```{r echo=FALSE,eval=TRUE, results='hide'}
-group <- list(
-  "STATE",
-  "EVTYPE")
+group <- list("EVTYPE")
 transform.groupRowsBy(process.dfContext(),group)
 ```
   
 
   
+
 > ###### **Generaly there are very few missing values in the data set. The F variable by far contains the most and is to be expected as these events are rare.**
 
 ```{r, cache=TRUE,fig.cap = "Missing values will not be an issue. The F variable can be used as an aesthetic in a plot"}
@@ -172,9 +396,14 @@ eventCostTable <- analyze.summarize.Table(.data = group_by(process.dfContext(),E
 ```{r kable, echo=FALSE,eval=TRUE}
 print(eventCostTable$out,type="html")
 ```
+#####Note
+
+
+> ###### **The table above indicates that the data could be tidyer.                      The Event Type variable has multiple varibles embeded and                      they could be separated.  However, any scheme that I come                      is aribitary due to my lack of domain knowlege.                      Therefore, I will use the judgement of those that put together                      the list.  In short, I will not tidy the EVTYPE further**
   
 
   
+
 
 #### Results
 
@@ -182,12 +411,20 @@ print(eventCostTable$out,type="html")
 ### and
 ## _**Which types of events are most harmful to Human Health?**_
 
-> ###### **The data are grouped by EVTYPE and ordered by BGN_DATE.                      The color and opacity of each name is scaled according to                      a cost function calculatd.  It is listed at the end of this                      doccument. Is a variable called scaled.Cost.Alpha. The                      variable has been scaled to the symbol fill color.                      The F variable scale to the line color of the symbol.                      Fatalities scale to the opacity of the symbol. Injuries                      scale to the size of the symbol. Finally the stroke of                      the line has been scaled to the *scaled* sum of Damages                      and Human suffuring. Refer to the end of the document                      to see how this calculated**
+##### The data are grouped by EVTYPE and ordered by BGN_DATE.
+##### The color and opacity of each name is scaled according to the cost function listed at the end of this doccument in a variable called scaled.Cost.#####
+##### The MAG variable has been scaled to the symbol fill color.
+##### The F variable scales to the line color of the symbol.
+##### Fatalities scale to the opacity of the symbol.
+##### Injuries scale to the size of the symbol.
+##### Finally the stroke of the line has been scaled to the *scaled* sum of Damages and Human suffuring.
+
+> ###### **Refer to the end of the documentto see how this calculated**
 
   
 
-```{r fig.margin = TRUE,fig.cap = "The visible Event Types have the greatest economic and health consquences"}
-analyze.summarize.Plot(percentile = .001,dayta = process.dfContext())
+```{r,  fig.margin = TRUE,fig.cap = "The visible Event Types have the greatest economic and health consquences"}
+analyze.summarize.Plot(percentData = 1, percentile = .1, dayta = process.dfContext())
 ```
 
 
@@ -207,17 +444,43 @@ side of the graph.
 The left side provides the answer to the questions posed.
 
 Each Event Type name, has be scaled in color and opacity according to the
-calculted metric scaled.Cost.Alpha, which is based on the fundamental stat
+calculted metric scaled.Cost, which is based on the fundamental stat
 refered to above.
 
 The more visiable the name the larger the apparent cost.
 
-### _**The fadded names on the y axis can be regarded as having a relatively small amount
-of consequence (monetary or health).  So the names which can be resolved most clearly
-can be regarded as having the Greatest Consequence, in either respect.**_
+### The fadded names on the y axis can be regarded as having a relatively small measure of consequence (monetary or health).###
+So the names which can be resolved most clearly can be regarded as having the Greatest Consequence,
+in either respect.
+Additionally, _the the text color has been scaled by the cost
+statistic with the colors of a heat map._
+The red-er colors indicate a higher cost. Also since the data are ordered by year one
+can see when the events, that had the greatest impact, took place .
+
+* #### Some unintended consequences of my plot design.####
++ The grouping of the event types on the y axis has caused a super positon of the colors.
++ The text is scaled to heat map colors (yellows oranges and reds), but since each observation
+in the data have an event type, with its own scaled color, the device draws the label for that
+row with the individual's color.  Because they are grouped, matching label are drawn at the same positions.
++ The color of the Event Types vary depending on how many observations it claims and the scale at which they register.
+
++ The hot colors( reds ,oranges) are those which can address the issue of consquences.
+
++ The supprising thing is that the Events which do not have a high relative cost , but have high
++ repeatablity manifest themselves in black text.
++ The black text color is not on the heat map color scale.
++ So why is there black text?  In a word, Superpostion.
++ The opacity on the events that have low cost is high, making their text barely visible with a
+bright yellow color.
++ However, since some of these events have thousands of observations, that barely visible
+color adds up an eventually makes the text visible.
+
+* #### This unintended effect has made this design difficult to use, as the low cost Events were intended to have barely visible y labels.####
++ On the other hand, it does show that there is a sort of additive high cost associated with events that have
+high repeatablity.
 
 
-##EventType Economic Consequences Appendix A ---------------------------------------
+##EventType Economic Consequences Appendix ---------------------------------------
   
 ```{r echo = TRUE, eval= FALSE }
 daytaPlotSet<-
@@ -228,11 +491,15 @@ daytaPlotSet<-
     scale.Injr= rescale(INJURIES,c(0,1),range(INJURIES,na.rm=TRUE)),
     scale.Fatl= rescale(FATALITIES,c(0,1),range(FATALITIES,na.rm=TRUE)),
 
-    scale.Cost.Alpha= rescale(scale.PDmg + scale.CDmg + scale.Injr + scale.Fatl,c(.1,1)),
+    scale.Cost = rescale(scale.PDmg + scale.CDmg + scale.Injr + scale.Fatl,c(0,1)),
 
-    scale.Cost.Stroke= floor(rescale(scale.Cost.Alpha,c(2,7))),
-    scale.Cost.Color= floor(rescale(scale.Cost.Alpha,c(1,numberOfColsForEventType))),
-    EVTYPE.Color.Alpha = alpha(palEVTYPECols[scale.Cost.Color],scale.Cost.Alpha)
+    scale.Cost.HumanFactors = rescale(scale.Injr + scale.Fatl,c(.1,1)),
+
+    scale.Cost.Stroke= floor(rescale(scale.Cost.HumanFactors,c(1,6))),
+
+    scale.Cost.EventType.TextColor = floor(rescale(scale.Cost,c(1,numberOfColsForEventType))),
+
+    EVTYPE.Color.Alpha = alpha(palEVTYPECols[scale.Cost.EventType.TextColor],scale.Cost)
     )
 ```
   

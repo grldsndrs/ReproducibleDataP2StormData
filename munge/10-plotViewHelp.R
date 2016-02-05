@@ -35,7 +35,7 @@ analyze.summarize.Table <- function(..., veu) {
   #' ```
 }
 
-analyze.summarize.Plot <- function(percentile=1, dayta, veu) {
+analyze.summarize.Plot <- function(percentData=1, percentile=5,dayta, veu) {
   if (hasArg(veu)) {
     tag = veu
   } else{
@@ -105,7 +105,7 @@ analyze.summarize.Plot <- function(percentile=1, dayta, veu) {
 # set.seed <- 1
 # # 0 - 1
 # pct <- percentile
-listSubSetIndices <- sample(nrow(dayta.Yr),floor(nrow(dayta.Yr)*percentile))
+listSubSetIndices <- sample.int(nrow(dayta.Yr),replace = FALSE, size = floor(nrow(dayta.Yr)*percentData))
 #   floor(unlist(sapply(dayta.Yr$count.Yr, function(cnt) {
 #     listOfInd <-
 #       runif(floor(pct * cnt), runningSum0 + 1, cnt + runningSum0)
@@ -168,7 +168,7 @@ dayta.Yr<-NULL
     colorRampPalette(brewer.pal(numberOfColsForF,"Purples")[floor(numberOfColsForF/3):numberOfColsForF])
   magPalFnc <-
     colorRampPalette(cscale(1:numberOfColsForMag,
-                            gradient_n_pal(brewer.pal(9, "Greens")))[floor(numberOfColsForMag /
+                            gradient_n_pal(brewer.pal(9, "YlGnBu")))[floor(numberOfColsForMag /
                                                                              3):numberOfColsForMag])
   eventTypePalFnc <-
     colorRampPalette(heat.colors(numberOfColsForEventType))
@@ -230,16 +230,21 @@ daytaPlotSet<-
     scale.Injr= rescale(INJURIES,c(0,1),range(INJURIES,na.rm=TRUE)),
     scale.Fatl= rescale(FATALITIES,c(0,1),range(FATALITIES,na.rm=TRUE)),
 
-    scale.Cost.Alpha= rescale(scale.PDmg + scale.CDmg + scale.Injr + scale.Fatl,c(.1,1)),
+    scale.Cost = rescale(scale.PDmg + scale.CDmg + scale.Injr + scale.Fatl,c(0,1)),
 
-    scale.Cost.Stroke= floor(rescale(scale.Cost.Alpha,c(2,7))),
-    scale.Cost.Color= floor(rescale(scale.Cost.Alpha,c(1,numberOfColsForEventType))),
-    EVTYPE.Color.Alpha = alpha(palEVTYPECols[scale.Cost.Color],scale.Cost.Alpha)
+    scale.Cost.HumanFactors = rescale(scale.Injr + scale.Fatl,c(.1,1)),
+
+    scale.Cost.Stroke= floor(rescale(scale.Cost.HumanFactors,c(1,6))),
+
+    scale.Cost.EventType.TextColor = floor(rescale(scale.Cost,c(1,numberOfColsForEventType))),
+
+    EVTYPE.Color.Alpha = alpha(palEVTYPECols[scale.Cost.EventType.TextColor],scale.Cost)
     )
 #' ```
 # EventType.EconomicConsequences.SubSetData ---------------------------------------------------
 
 # View.Plot.Exclude ---------------------------------------------------
+
 
   # group by Year to get mean by year
   gtype <- group_by(daytaPlotSet, year, EVTYPE)
@@ -261,8 +266,8 @@ daytaPlotSet<-
   daytaPlotSet <-
     group_by(daytaPlotSet,EVTYPE,year)# Making and Submitting Plots
 
-  # daytaPlotSet$LnColor <- palSymColCols[injuriesFactors]
-
+  daytaPlotSet <-
+    daytaPlotSet[daytaPlotSet$scale.Cost > quantile(daytaPlotSet$scale.Cost,prob=1-percentile/100),]
 
   #par(mar=c(2,2,5,4)+.1)
 
@@ -292,9 +297,9 @@ daytaPlotSet<-
         fill = MAG,
         size = INJURIES,
         stroke = scale.Cost.Stroke,
-        alpha =  FATALITIES #.1,Percent.Emissions.type.fips,
-         # group = EVTYPE,
-         # order = BGN_DATE
+        alpha =  FATALITIES, #.1,Percent.Emissions.type.fips,
+        group = EVTYPE,
+        order = BGN_DATE
       )
     ) +
     scale_shape_manual(
@@ -393,7 +398,7 @@ daytaPlotSet<-
        legend.position = "right",
        legend.direction = "vertical",
        legend.box = "vertical",
-       legend.key.height = unit(.25,"cm"),
+       legend.key.height = unit(.175,"cm"),
       # legend.key = element_rect(fill = "white"),
       # legend.background = element_rect(fill = "white"),
       #legend.text = element_text( face = "bold"),
@@ -402,9 +407,9 @@ daytaPlotSet<-
       panel.background = element_rect(fill = "white"),
       axis.text.y = element_text(
         # face = "bold",
-        size = 9,
-        angle = 45,
-        color = melteddDaytaPlotSet$EVTYPE.Color.Alpha
+        size = 8,
+        angle = 15,
+        color = melteddDaytaPlotSet$scale.Cost.EventType.TextColor
       )
     ) +
     geom_point()
