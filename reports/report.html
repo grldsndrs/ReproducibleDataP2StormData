@@ -66,7 +66,7 @@ img {
 </div>
 
 
-<pre><code>## [1] &quot;Fri Feb 05 08:35:47 2016&quot;</code></pre>
+<pre><code>## [1] &quot;Fri Feb 05 09:01:05 2016&quot;</code></pre>
 <div id="data-processing-load-data-via-projecttemplate" class="section level2">
 <h2>Data Processing: Load Data via <em>“ProjectTemplate”</em></h2>
 <pre class="r"><code>&gt; ldData &lt;- process.loadData()</code></pre>
@@ -78,101 +78,23 @@ img {
 <pre><code> Running helper script: viewGeneratorHelp.R</code></pre>
 <pre><code>Autoloading packages</code></pre>
 <pre><code> Loading package: reshape</code></pre>
-<pre><code>Loading required package: reshape</code></pre>
 <pre><code> Loading package: plyr</code></pre>
-<pre><code>Loading required package: plyr</code></pre>
-<pre><code>
-Attaching package: 'plyr'</code></pre>
-<pre><code>The following objects are masked from 'package:reshape':
-
-    rename, round_any</code></pre>
 <pre><code> Loading package: ggplot2</code></pre>
-<pre><code>Loading required package: ggplot2</code></pre>
 <pre><code> Loading package: stringr</code></pre>
-<pre><code>Loading required package: stringr</code></pre>
 <pre><code> Loading package: lubridate</code></pre>
-<pre><code>Loading required package: lubridate</code></pre>
-<pre><code>
-Attaching package: 'lubridate'</code></pre>
-<pre><code>The following object is masked from 'package:plyr':
-
-    here</code></pre>
-<pre><code>The following object is masked from 'package:reshape':
-
-    stamp</code></pre>
 <pre><code> Loading package: dplyr</code></pre>
-<pre><code>Loading required package: dplyr</code></pre>
-<pre><code>
-Attaching package: 'dplyr'</code></pre>
-<pre><code>The following objects are masked from 'package:lubridate':
-
-    intersect, setdiff, union</code></pre>
-<pre><code>The following objects are masked from 'package:plyr':
-
-    arrange, count, desc, failwith, id, mutate, rename, summarise,
-    summarize</code></pre>
-<pre><code>The following object is masked from 'package:reshape':
-
-    rename</code></pre>
-<pre><code>The following objects are masked from 'package:stats':
-
-    filter, lag</code></pre>
-<pre><code>The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union</code></pre>
 <pre><code> Loading package: graphics</code></pre>
 <pre><code> Loading package: rmarkdown</code></pre>
-<pre><code>Loading required package: rmarkdown</code></pre>
 <pre><code> Loading package: knitr</code></pre>
 <pre><code> Loading package: reshape2</code></pre>
-<pre><code>Loading required package: reshape2</code></pre>
-<pre><code>
-Attaching package: 'reshape2'</code></pre>
-<pre><code>The following objects are masked from 'package:reshape':
-
-    colsplit, melt, recast</code></pre>
 <pre><code> Loading package: Amelia</code></pre>
-<pre><code>Loading required package: Amelia</code></pre>
-<pre><code>Loading required package: Rcpp</code></pre>
-<pre><code>## 
-## Amelia II: Multiple Imputation
-## (Version 1.7.4, built: 2015-12-05)
-## Copyright (C) 2005-2016 James Honaker, Gary King and Matthew Blackwell
-## Refer to http://gking.harvard.edu/amelia/ for more information
-## </code></pre>
 <pre><code> Loading package: xtable</code></pre>
-<pre><code>Loading required package: xtable</code></pre>
 <pre><code> Loading package: RColorBrewer</code></pre>
-<pre><code>Loading required package: RColorBrewer</code></pre>
 <pre><code> Loading package: scales</code></pre>
-<pre><code>Loading required package: scales</code></pre>
 <pre><code> Loading package: outliers</code></pre>
-<pre><code>Loading required package: outliers</code></pre>
 <pre><code> Loading package: tidyr</code></pre>
-<pre><code>Loading required package: tidyr</code></pre>
-<pre><code>
-Attaching package: 'tidyr'</code></pre>
-<pre><code>The following object is masked from 'package:reshape':
-
-    expand</code></pre>
 <pre><code>Autoloading cache</code></pre>
-<pre><code> Loading cached data set: repdata.data.StormData</code></pre>
 <pre><code>Autoloading data</code></pre>
-<pre><code>Loading required package: data.table</code></pre>
-<pre><code>
-Attaching package: 'data.table'</code></pre>
-<pre><code>The following objects are masked from 'package:reshape2':
-
-    dcast, melt</code></pre>
-<pre><code>The following objects are masked from 'package:dplyr':
-
-    between, last</code></pre>
-<pre><code>The following objects are masked from 'package:lubridate':
-
-    hour, mday, month, quarter, wday, week, yday, year</code></pre>
-<pre><code>The following object is masked from 'package:reshape':
-
-    melt</code></pre>
 <pre><code>Converting data.frames to data.tables</code></pre>
 <pre><code>Munging data</code></pre>
 <pre><code> Running preprocessing script: 00-modelQueryHelp.R</code></pre>
@@ -1060,7 +982,7 @@ The visible Event Types have the greatest economic and health consquences
 </div>
 <div id="the-fadded-names-on-the-y-axis-can-be-regarded-as-having-a-relatively-small-measure-of-consequence-monetary-or-health." class="section level3">
 <h3>The fadded names on the y axis can be regarded as having a relatively small measure of consequence (monetary or health).</h3>
-<p>So the names which can be resolved most clearly can be regarded as having the Greatest Consequence, in either respect. Additionally, <em>the the text color has been scaled with the cost statistic with the colors of a heat map.</em> The red-er colors indicate a higher cost. Also since the data are ordered by year one can see when the events, that had the greatest impact, took place .</p>
+<p>So the names which can be resolved most clearly can be regarded as having the Greatest Consequence, in either respect. Additionally, <em>the the text color has been scaled by the cost statistic with the colors of a heat map.</em> The red-er colors indicate a higher cost. Also since the data are ordered by year one can see when the events, that had the greatest impact, took place .</p>
 <ul>
 <li><h4 id="some-unintended-consequences-of-my-plot-design.">Some unintended consequences of my plot design.</h4></li>
 <li>The grouping of the event types on the y axis has caused a super positon of the colors.</li>
